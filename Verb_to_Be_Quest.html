@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Verb to Be Quest!</title>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#4f46e5,#7c3aed 55%,#ec4899);color:#172554;min-height:100vh}
+  .app{max-width:1100px;margin:auto;padding:18px}
+  .screen{display:none}.screen.active{display:block}
+  .card{background:#fff;border-radius:26px;padding:28px;box-shadow:0 18px 50px #24105b55}
+  h1{font-size:clamp(38px,7vw,72px);margin:8px 0;color:#4f46e5;line-height:.95}
+  h2{font-size:34px;margin:5px 0 18px}
+  .subtitle{font-size:21px;color:#475569}
+  .hero{text-align:center;padding:45px 25px}
+  .mascot{font-size:90px;animation:bounce 1.5s infinite}
+  @keyframes bounce{50%{transform:translateY(-12px) rotate(3deg)}}
+  button{border:0;border-radius:16px;padding:15px 22px;font-size:19px;font-weight:800;cursor:pointer;transition:.15s;box-shadow:0 5px 0 #0002}
+  button:hover{transform:translateY(-2px)} button:active{transform:translateY(2px);box-shadow:none}
+  .primary{background:#facc15;color:#422006}.blue{background:#60a5fa;color:#082f49}.green{background:#34d399;color:#064e3b}.pink{background:#f472b6;color:#500724}.gray{background:#e2e8f0;color:#334155}
+  .controls{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-top:25px}
+  .rules{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:28px 0}
+  .rule{padding:18px;border-radius:18px;text-align:center;font-weight:800;font-size:20px}
+  .am{background:#dbeafe}.is{background:#fce7f3}.are{background:#d1fae5}
+  .topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:15px}
+  .pill{background:#fff;border-radius:999px;padding:10px 16px;font-weight:900;box-shadow:0 5px 20px #0002}
+  .progress{height:13px;background:#dbeafe;border-radius:99px;overflow:hidden;margin:12px 0 22px}
+  .progress i{display:block;height:100%;width:0;background:linear-gradient(90deg,#22c55e,#facc15,#f97316);transition:.3s}
+  .question{text-align:center;padding:24px}
+  .emoji{font-size:75px;min-height:90px}
+  .sentence{font-size:clamp(30px,5vw,52px);font-weight:900;margin:18px 0;color:#1e293b}
+  .blank{display:inline-block;min-width:110px;border-bottom:6px solid #6366f1;color:#6366f1}
+  .answers{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:720px;margin:25px auto}
+  .answers button{font-size:28px;padding:22px}
+  .feedback{min-height:54px;font-size:23px;font-weight:900;text-align:center}
+  .good{color:#059669}.bad{color:#dc2626}
+  .explain{background:#f8fafc;border-radius:18px;padding:13px 18px;margin:10px auto;max-width:700px;font-size:17px}
+  .next{display:none;margin:auto}
+  .end{text-align:center}
+  .scorebig{font-size:72px;font-weight:900;color:#4f46e5}
+  .stars{font-size:50px;letter-spacing:8px}
+  .nameInput{padding:15px;border:3px solid #cbd5e1;border-radius:15px;font-size:20px;width:min(420px,100%);text-align:center}
+  .levelCards{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin:25px 0}
+  .level{padding:20px;border-radius:20px;background:#f8fafc;border:3px solid transparent}
+  .level:hover{border-color:#818cf8}
+  .small{font-size:14px;color:#64748b}
+  .hidden{display:none!important}
+  @media(max-width:700px){.rules,.answers,.levelCards{grid-template-columns:1fr}.card{padding:20px}.sentence{font-size:30px}}
+</style>
+</head>
+<body>
+<div class="app">
+  <section id="home" class="screen active">
+    <div class="card hero">
+      <div class="mascot">🦄</div>
+      <h1>Verb to Be Quest!</h1>
+      <p class="subtitle">Help the characters complete their sentences. Choose <b>AM, IS</b> or <b>ARE</b>!</p>
+      <input id="player" class="nameInput" placeholder="Your name (optional)" maxlength="18">
+      <div class="rules">
+        <div class="rule am">I → AM<br>👧 I am...</div>
+        <div class="rule is">HE / SHE / IT → IS<br>🧒 She is...</div>
+        <div class="rule are">YOU / WE / THEY → ARE<br>👨‍👩‍👧 They are...</div>
+      </div>
+      <div class="levelCards">
+        <div class="level"><b>🌱 Starter</b><br>Easy sentences<br><span class="small">12 questions</span></div>
+        <div class="level"><b>🚀 Explorer</b><br>Mixed clues + speed<br><span class="small">15 questions</span></div>
+        <div class="level"><b>🏆 Champion</b><br>Tricky sentences<br><span class="small">18 questions</span></div>
+      </div>
+      <div class="controls">
+        <button class="green" onclick="startGame('starter')">🌱 STARTER</button>
+        <button class="blue" onclick="startGame('explorer')">🚀 EXPLORER</button>
+        <button class="pink" onclick="startGame('champion')">🏆 CHAMPION</button>
+      </div>
+      <p class="small">Classroom idea: play in teams and let students explain WHY their answer is correct.</p>
+    </div>
+  </section>
+
+  <section id="game" class="screen">
+    <div class="topbar">
+      <div class="pill">👤 <span id="name">Player</span></div>
+      <div class="pill">⭐ Score: <span id="score">0</span></div>
+      <div class="pill">🔥 Streak: <span id="streak">0</span></div>
+      <div class="pill">⏱️ <span id="timer">15</span>s</div>
+    </div>
+    <div class="progress"><i id="bar"></i></div>
+    <div class="card question">
+      <div class="small">QUESTION <span id="qnum">1</span> / <span id="total">12</span></div>
+      <div id="emoji" class="emoji">🧒</div>
+      <div id="sentence" class="sentence"></div>
+      <div class="answers">
+        <button class="blue" onclick="answer('am')">AM</button>
+        <button class="pink" onclick="answer('is')">IS</button>
+        <button class="green" onclick="answer('are')">ARE</button>
+      </div>
+      <div id="feedback" class="feedback"></div>
+      <div id="explain" class="explain hidden"></div>
+      <button id="next" class="primary next" onclick="nextQuestion()">NEXT ➜</button>
+    </div>
+  </section>
+
+  <section id="end" class="screen">
+    <div class="card end">
+      <div class="mascot">🎉</div>
+      <h2 id="endTitle">Amazing!</h2>
+      <div class="scorebig" id="finalScore">0</div>
+      <div class="stars" id="stars">⭐⭐⭐</div>
+      <p id="resultText" class="subtitle"></p>
+      <div class="controls">
+        <button class="green" onclick="restart()">🔄 PLAY AGAIN</button>
+        <button class="gray" onclick="show('home')">🏠 HOME</button>
+      </div>
+      <div class="explain"><b>Teacher challenge:</b> Ask the learner to make one new sentence using the verb to be that they practiced.</div>
+    </div>
+  </section>
+</div>
+
+<script>
+const banks = {
+ starter:[
+  ['I ___ happy.','am','😊','I → AM'],
+  ['She ___ my friend.','is','👧','She → IS'],
+  ['He ___ tall.','is','🧒','He → IS'],
+  ['They ___ students.','are','👩‍🎓','They → ARE'],
+  ['We ___ ready.','are','🙋','We → ARE'],
+  ['You ___ kind.','are','🫶','You → ARE'],
+  ['It ___ small.','is','🐹','It → IS'],
+  ['I ___ at school.','am','🏫','I → AM'],
+  ['She ___ nine years old.','is','🎂','She → IS'],
+  ['We ___ friends.','are','🤝','We → ARE'],
+  ['He ___ my teacher.','is','👨‍🏫','He → IS'],
+  ['They ___ excited.','are','🤩','They → ARE']
+ ],
+ explorer:[
+  ['I ___ from Mexico.','am','🇲🇽','I → AM'],
+  ['My brother ___ funny.','is','😂','He → IS'],
+  ['The dogs ___ hungry.','are','🐶','They → ARE'],
+  ['You ___ very clever!','are','🧠','You → ARE'],
+  ['My mom and I ___ at home.','are','🏠','We → ARE'],
+  ['The cat ___ under the table.','is','🐱','It → IS'],
+  ['My friends ___ in the park.','are','🌳','They → ARE'],
+  ['I ___ not tired.','am','😎','I → AM'],
+  ['Ana ___ excited today.','is','🎈','She → IS'],
+  ['We ___ good at English.','are','📚','We → ARE'],
+  ['The book ___ on the desk.','is','📕','It → IS'],
+  ['You and Tom ___ teammates.','are','⚽','You/They → ARE'],
+  ['He ___ not angry.','is','🙂','He → IS'],
+  ['They ___ very fast.','are','🏃','They → ARE'],
+  ['I ___ a great learner!','am','🌟','I → AM']
+ ],
+ champion:[
+  ['My sister and I ___ excited.','are','🎉','Two people = WE → ARE'],
+  ['Neither answer ___ correct.','is','🤔','Neither = singular → IS'],
+  ['Those children ___ very quiet.','are','🤫','Children = THEY → ARE'],
+  ['The weather ___ nice today.','is','☀️','Weather = IT → IS'],
+  ['You and I ___ a team.','are','🏆','You + I = WE → ARE'],
+  ['Everyone ___ ready.','is','🙌','Everyone = singular → IS'],
+  ['I ___ sure about this answer.','am','💡','I → AM'],
+  ['My shoes ___ under the bed.','are','👟','Shoes = THEY → ARE'],
+  ['The teacher ___ in the classroom.','is','👩‍🏫','Teacher = HE/SHE → IS'],
+  ['We ___ not late.','are','⏰','We → ARE'],
+  ['The children ___ not sleepy.','are','😃','Children = THEY → ARE'],
+  ['This game ___ fun!','is','🎮','Game = IT → IS'],
+  ['You ___ my teammates.','are','🤝','You → ARE'],
+  ['My best friend ___ from Canada.','is','🇨🇦','Friend = HE/SHE → IS'],
+  ['I ___ ready for the challenge.','am','🚀','I → AM'],
+  ['These books ___ interesting.','are','📚','Books = THEY → ARE'],
+  ['Everybody ___ welcome here.','is','👋','Everybody = singular → IS'],
+  ['My parents ___ proud.','are','❤️','Parents = THEY → ARE']
+ ]
+};
+
+let mode='starter', questions=[], index=0, score=0, streak=0, correct=0, timer=15, interval=null, locked=false;
+
+function show(id){
+ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function startGame(m){
+ mode=m; questions=shuffle(banks[m]); index=0; score=0; streak=0; correct=0;
+ document.getElementById('name').textContent=document.getElementById('player').value.trim()||'Player';
+ document.getElementById('total').textContent=questions.length;
+ show('game'); render();
+}
+function render(){
+ locked=false;
+ const q=questions[index];
+ document.getElementById('qnum').textContent=index+1;
+ document.getElementById('emoji').textContent=q[2];
+ document.getElementById('sentence').innerHTML=q[0].replace('___','<span class="blank">?</span>');
+ document.getElementById('feedback').textContent='';
+ document.getElementById('feedback').className='feedback';
+ document.getElementById('explain').classList.add('hidden');
+ document.getElementById('next').style.display='none';
+ document.getElementById('bar').style.width=((index/questions.length)*100)+'%';
+ startTimer();
+}
+function startTimer(){
+ clearInterval(interval);
+ timer=mode==='starter'?18:(mode==='explorer'?15:12);
+ document.getElementById('timer').textContent=timer;
+ interval=setInterval(()=>{
+   timer--; document.getElementById('timer').textContent=timer;
+   if(timer<=0){clearInterval(interval); answer(null);}
+ },1000);
+}
+function answer(choice){
+ if(locked)return;
+ locked=true; clearInterval(interval);
+ const q=questions[index], isCorrect=choice===q[1];
+ const fb=document.getElementById('feedback'), ex=document.getElementById('explain');
+ if(isCorrect){
+   correct++; streak++;
+   let points=100 + Math.min(streak,5)*20 + timer*3;
+   score+=points;
+   fb.textContent='🎉 Correct! +' + points + ' points';
+   fb.className='feedback good';
+ }else{
+   streak=0;
+   fb.textContent=choice===null?'⏰ Time is up!':'💡 Not quite!';
+   fb.className='feedback bad';
+ }
+ document.getElementById('score').textContent=score;
+ document.getElementById('streak').textContent=streak;
+ ex.innerHTML='<b>Remember:</b> '+q[3]+'. The correct answer is <b>'+q[1].toUpperCase()+'</b>.';
+ ex.classList.remove('hidden');
+ document.getElementById('sentence').innerHTML=q[0].replace('___','<span class="blank">'+q[1].toUpperCase()+'</span>');
+ document.getElementById('next').style.display='block';
+}
+function nextQuestion(){
+ index++;
+ if(index>=questions.length) endGame();
+ else render();
+}
+function endGame(){
+ clearInterval(interval);
+ document.getElementById('bar').style.width='100%';
+ document.getElementById('finalScore').textContent=score+' pts';
+ const pct=correct/questions.length;
+ document.getElementById('stars').textContent=pct>=.9?'⭐⭐⭐':pct>=.7?'⭐⭐':'⭐';
+ let title=pct>=.9?'🏆 Verb to Be Champion!':pct>=.7?'🚀 Great Job!':'🌱 Keep Practicing!';
+ document.getElementById('endTitle').textContent=title;
+ document.getElementById('resultText').innerHTML=`You got <b>${correct} out of ${questions.length}</b> correct (${Math.round(pct*100)}%).<br>Your best tool is: <b>${pct>=.9?'explaining WHY the answer is correct!': 'looking at the subject first, then choosing AM, IS or ARE.'}</b>`;
+ show('end');
+}
+function restart(){startGame(mode)}
+</script>
+</body>
+</html>
